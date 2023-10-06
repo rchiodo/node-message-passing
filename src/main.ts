@@ -78,4 +78,4 @@ class MainThread {
 }
 
 const mainThread = new MainThread();
-mainThread.run(1000);
+mainThread.run(1);
