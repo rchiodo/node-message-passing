@@ -32,6 +32,8 @@ class MainThread {
             await this.readNotebook();
         }
         const singleThreadTime = singleThreadDuration.getDurationInMilliseconds();
+
+        // Two levels for posting messages.
         const multiThreadDuration = new Duration();
         this._logs.push('Switching to dispatch mode');
         this._worker.postMessage({ type: 'start_dispatch', workerPath: './build/worker_level_two.js' });
@@ -40,10 +42,22 @@ class MainThread {
         }
         const multiThreadTime = multiThreadDuration.getDurationInMilliseconds();
         this._worker.postMessage({ type: 'stop_dispatch' });
+
+        // Using a shared buffer instead.
+        const sharedDuration = new Duration();
+        this._logs.push('Switching to shared mode');
+        this._worker.postMessage({ type: 'start_shared', workerPath: './build/worker_shared_buffer.js' });
+        for (let i = 0; i < iterations; i++) {
+            await this.readNotebook();
+        }
+        const sharedTime = sharedDuration.getDurationInMilliseconds();
+        this._worker.postMessage({ type: 'stop_shared' });
+
         this._worker.postMessage({ type: 'quit' });
         console.log('Main thread finished');
         console.log(`Single time: ${singleThreadTime}ms`);
         console.log(`Multithread time: ${multiThreadTime}ms`);
+        console.log(`Shared time: ${sharedTime}ms`);
     }
 
     async readNotebook() {
@@ -78,4 +92,4 @@ class MainThread {
 }
 
 const mainThread = new MainThread();
-mainThread.run(1);
+mainThread.run(1000);
