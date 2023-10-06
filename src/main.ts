@@ -9,6 +9,7 @@
 import { Worker } from 'worker_threads';
 import * as path from 'path';
 import { Deferred } from './deferred';
+import { Duration } from './duration';
 
 class MainThread {
     private _worker: Worker;
@@ -26,19 +27,23 @@ class MainThread {
 
     async run(iterations: number = 1) {
         console.log('Main thread started');
+        const singleThreadDuration = new Duration();
         for (let i = 0; i < iterations; i++) {
             await this.readNotebook();
         }
+        const singleThreadTime = singleThreadDuration.getDurationInMilliseconds();
+        const multiThreadDuration = new Duration();
         this._logs.push('Switching to dispatch mode');
         this._worker.postMessage({ type: 'start_dispatch', workerPath: './build/worker_level_two.js' });
         for (let i = 0; i < iterations; i++) {
             await this.readNotebook();
         }
+        const multiThreadTime = multiThreadDuration.getDurationInMilliseconds();
         this._worker.postMessage({ type: 'stop_dispatch' });
         this._worker.postMessage({ type: 'quit' });
-        for (const log of this._logs) {
-            console.log(log);
-        }
+        console.log('Main thread finished');
+        console.log(`Single time: ${singleThreadTime}ms`);
+        console.log(`Multithread time: ${multiThreadTime}ms`);
     }
 
     async readNotebook() {
@@ -50,7 +55,7 @@ class MainThread {
     }
     private _handleMessage(message: any) {
         if (message.type === 'notebook') {
-            this._logs.push(`Got notebook from worker thread`);
+            this._logs.push(`Got notebook from worker thread ${message.owner}`);
             this._logs.push(message.notebook.metadata.kernelspec);
             const deferred = this._pendingRequests.get(message.id);
             if (deferred) {
@@ -73,4 +78,4 @@ class MainThread {
 }
 
 const mainThread = new MainThread();
-mainThread.run();
+mainThread.run(1000);

@@ -14,6 +14,7 @@ class WorkerThreadOne {
         if (message.type === 'start_dispatch') {
             this._dispatcher = true;
             this._secondWorker = new Worker(message.workerPath);
+            this._secondWorker.on('message', this._handleMessage.bind(this));
         }
         if (message.type === 'stop_dispatch') {
             this._dispatcher = false;
@@ -32,7 +33,7 @@ class WorkerThreadOne {
                 this._secondWorker?.postMessage(message);
             } else {
                 const notebook = this._readNotebook(message.path);
-                parentPort?.postMessage({ type: 'notebook', notebook, id: message.id });
+                parentPort?.postMessage({ type: 'notebook', notebook, id: message.id, owner: 'one' });
             }
         }
         if (message.type === 'notebook') {

@@ -14,7 +14,7 @@ class WorkerThreadTwo {
         }
         if (message.type === 'read_notebook') {
             const notebook = this._readNotebook(message.path);
-            parentPort?.postMessage({ type: 'notebook', notebook, id: message.id });
+            parentPort?.postMessage({ type: 'notebook', notebook, id: message.id, owner: 'two' });
         }
     }
 

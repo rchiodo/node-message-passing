@@ -2,7 +2,7 @@
     "name": "node-message-passing",
     "version": "1.0.0",
     "description": "",
-    "license": "UNLICENSED",
+    "license": "LICENSE",
     "repository": "",
     "main": "src/main.ts",
     "scripts": {
