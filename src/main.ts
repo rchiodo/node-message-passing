@@ -1,7 +1,76 @@
-export class Main {
-    public static sayHello(): string {
-        return 'Hello World';
+// Basic flow
+// 1. Create a worker thread that reads a notebook
+// 2. Send a message to worker thread to give back the notebook json
+// 3. Handle message in main thread and output the notebook kernel section
+// 4. Send a quit message to worker thread
+// 5. Wait for quit response
+// 6. Terminate the worker thread
+
+import { Worker } from 'worker_threads';
+import * as path from 'path';
+import { Deferred } from './deferred';
+
+class MainThread {
+    private _worker: Worker;
+    private _notebookPath = path.join(process.cwd(), 'notebooks', 'notebook_level_one.ipynb');
+    private _logs: string[] = [];
+    private _requestId: number = 0;
+    private _pendingRequests: Map<number, Deferred<any>> = new Map<number, Deferred<any>>();
+
+    constructor() {
+        this._worker = new Worker('./build/worker_level_one.js');
+        this._worker.on('message', this._handleMessage.bind(this));
+        this._worker.on('error', this._handleError.bind(this));
+        this._worker.on('exit', this._handleExit.bind(this));
+    }
+
+    async run(iterations: number = 1) {
+        console.log('Main thread started');
+        for (let i = 0; i < iterations; i++) {
+            await this.readNotebook();
+        }
+        this._logs.push('Switching to dispatch mode');
+        this._worker.postMessage({ type: 'start_dispatch', workerPath: './build/worker_level_two.js' });
+        for (let i = 0; i < iterations; i++) {
+            await this.readNotebook();
+        }
+        this._worker.postMessage({ type: 'stop_dispatch' });
+        this._worker.postMessage({ type: 'quit' });
+        for (const log of this._logs) {
+            console.log(log);
+        }
+    }
+
+    async readNotebook() {
+        const id = this._requestId++;
+        const deferred = new Deferred<any>();
+        this._pendingRequests.set(id, deferred);
+        this._worker.postMessage({ type: 'read_notebook', path: this._notebookPath, id });
+        return deferred.promise;
+    }
+    private _handleMessage(message: any) {
+        if (message.type === 'notebook') {
+            this._logs.push(`Got notebook from worker thread`);
+            this._logs.push(message.notebook.metadata.kernelspec);
+            const deferred = this._pendingRequests.get(message.id);
+            if (deferred) {
+                deferred.resolve(message.notebook);
+                this._pendingRequests.delete(message.id);
+            }
+        } else if (message.type === 'quit') {
+            this._logs.push(`Got quit message from worker thread`);
+            this._worker.terminate();
+        }
+    }
+
+    private _handleError(error: Error) {
+        console.log(`Worker thread error: ${error}`);
+    }
+
+    private _handleExit(code: number) {
+        console.log(`Worker thread exited with code ${code}`);
     }
 }
 
-console.log(Main.sayHello())
+const mainThread = new MainThread();
+mainThread.run();

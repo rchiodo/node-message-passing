@@ -9,6 +9,7 @@
         "start": "node build/main.js",
         "dev": "ts-node --files ./src/main.ts",
         "build": "tsc",
+        "watch": "tsc --watch",
         "prebuild": "rimraf build",
         "clean": "rimraf build"
     },
