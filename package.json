@@ -1,0 +1,24 @@
+{
+    "name": "node-message-passing",
+    "version": "1.0.0",
+    "description": "",
+    "license": "UNLICENSED",
+    "repository": "",
+    "main": "src/main.ts",
+    "scripts": {
+        "start": "node build/main.js",
+        "dev": "ts-node --files ./src/main.ts",
+        "build": "tsc",
+        "prebuild": "rimraf build",
+        "clean": "rimraf build"
+    },
+    "dependencies": {
+        "dotenv": "^16.3.1"
+    },
+    "devDependencies": {
+        "@types/node": "^20.8.2",
+        "rimraf": "^5.0.5",
+        "ts-node": "^10.9.1",
+        "typescript": "^5.2.2"
+    }
+}
