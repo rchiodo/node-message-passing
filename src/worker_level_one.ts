@@ -1,6 +1,7 @@
 import { Worker, parentPort } from 'worker_threads';
 import * as fs from 'fs';
 import { HeaderSize, MaxSharedBufferSize, SyncSize } from './sharedBufferConstants';
+import { unpack } from 'msgpackr';
 
 class WorkerThreadOne {
     private _secondWorker: Worker | undefined;
@@ -81,10 +82,7 @@ class WorkerThreadOne {
 
                             // Read the notebook
                             const raw = new Uint8Array(this._sharedBuffer!);
-                            const json = Buffer.from(
-                                raw.slice(requestOffset, requestOffset + requestLength)
-                            ).toString();
-                            const nb = JSON.parse(json);
+                            const nb = unpack(raw.slice(requestOffset, requestOffset + requestLength));
 
                             // Send the notebook back to the main thread
                             parentPort?.postMessage({

@@ -1,6 +1,7 @@
 import { parentPort } from 'worker_threads';
 import * as fs from 'fs';
 import { HeaderIndex, HeaderSize, SyncSize } from './sharedBufferConstants';
+import { pack } from 'msgpackr';
 
 class WorkerSharedBuffer {
     private _sharedBuffer: SharedArrayBuffer | undefined;
@@ -22,7 +23,7 @@ class WorkerSharedBuffer {
                 const notebook = this._readNotebook(message.path);
 
                 // First write the notebook to the shared buffer
-                const nb = Buffer.from(JSON.stringify(notebook));
+                const nb = pack(notebook);
                 const requestOffset = SyncSize.total + HeaderSize.total;
 
                 // Make sure it will fit
