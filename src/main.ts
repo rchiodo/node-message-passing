@@ -73,8 +73,8 @@ class MainThread {
             this._logs.push(message.notebook.metadata.kernelspec);
             const deferred = this._pendingRequests.get(message.id);
             if (deferred) {
-                deferred.resolve(message.notebook);
                 this._pendingRequests.delete(message.id);
+                deferred.resolve(message.notebook);
             }
         } else if (message.type === 'quit') {
             this._logs.push(`Got quit message from worker thread`);
