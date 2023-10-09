@@ -57,7 +57,7 @@ class MainThread {
         console.log('Main thread finished');
         console.log(`Single time: ${singleThreadTime}ms`);
         console.log(`Multithread time: ${multiThreadTime}ms`);
-        console.log(`Shared time: ${sharedTime}ms`);
+        console.log(`Shared buffer time: ${sharedTime}ms`);
     }
 
     async readNotebook() {
