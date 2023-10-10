@@ -42,7 +42,8 @@ async server. Async reads would then be fine (well assuming files haven't change
 ## Idea 5: Use streams between the two threads.
 
 Might be faster than posting a message. Can transfer streams between threads to give them to out to the worker thread?
-Maybe the stream can just be a shared file
+Maybe the stream can just be a shared file. No streams cannot be transferred between threads. Writable web streams can, but
+not sure how this could be faster than the SharedArrayBuffer. It still has to turn the json into a byte array.
 
 ## Idea 6: Use net server between the two threads.
 

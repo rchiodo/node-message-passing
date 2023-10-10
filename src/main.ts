@@ -53,11 +53,22 @@ class MainThread {
         const sharedTime = sharedDuration.getDurationInMilliseconds();
         this._worker.postMessage({ type: 'stop_shared' });
 
+        // Using a shared buffer with custom serialization instead.
+        const sharedCustomDuration = new Duration();
+        this._logs.push('Switching to shared custom serializer mode');
+        this._worker.postMessage({ type: 'start_shared_avro', workerPath: './build/worker_shared_buffer_avro.js' });
+        for (let i = 0; i < iterations; i++) {
+            await this.readNotebook();
+        }
+        const sharedCustomTime = sharedDuration.getDurationInMilliseconds();
+        this._worker.postMessage({ type: 'stop_shared_avro' });
+
         this._worker.postMessage({ type: 'quit' });
         console.log('Main thread finished');
         console.log(`Single time: ${singleThreadTime}ms`);
         console.log(`Multithread time: ${multiThreadTime}ms`);
         console.log(`Shared buffer time: ${sharedTime}ms`);
+        console.log(`Shared buffer avro time: ${sharedTime}ms`);
     }
 
     async readNotebook() {
